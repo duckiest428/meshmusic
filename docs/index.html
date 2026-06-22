@@ -14,7 +14,6 @@
 </head>
 <body>
 
-<!-- ============ NAV ============ -->
 <header class="nav" id="nav">
   <div class="nav__inner">
     <a href="#top" class="nav__brand">
@@ -35,8 +34,7 @@
     </nav>
 
     <div class="nav__cta">
-      <a href="#download" class="btn btn--ghost">Sign in</a>
-      <a href="#download" class="btn btn--solid">Get Mesh Player</a>
+      <a href="https://github.com/duckiest428/meshmusic/releases/latest" class="btn btn--solid">Get Mesh Player</a>
     </div>
 
     <button class="nav__burger" id="navBurger" aria-label="Open menu" aria-expanded="false" aria-controls="navMobile">
@@ -49,13 +47,12 @@
     <a href="#theater">Theater Mode</a>
     <a href="#library">Library</a>
     <a href="#formats">Formats</a>
-    <a href="#download" class="btn btn--solid">Get Mesh Player</a>
+    <a href="https://github.com/duckiest428/meshmusic/releases/latest" class="btn btn--solid">Get Mesh Player</a>
   </div>
 </header>
 
 <main id="top">
 
-  <!-- ============ HERO — live Theater Player recreation ============ -->
   <section class="hero" id="hero">
     <div class="hero__stage" id="heroStage">
 
@@ -84,12 +81,11 @@
         </p>
 
         <div class="hero__actions">
-          <a href="#download" class="btn btn--solid btn--lg">Download for macOS</a>
+          <a href="https://github.com/duckiest428/meshmusic/releases/latest" class="btn btn--solid btn--lg">Download for macOS</a>
           <a href="#theater" class="btn btn--outline btn--lg">See Theater Mode ↓</a>
         </div>
       </div>
 
-      <!-- live lyric scroller -->
       <div class="hero__lyrics" id="heroLyrics" aria-hidden="true">
         <p class="lyric-line" data-state="past">Loading the last track</p>
         <p class="lyric-line" data-state="past">Pulling the waveform in</p>
@@ -98,7 +94,6 @@
         <p class="lyric-line" data-state="next">Just press play</p>
       </div>
 
-      <!-- transport -->
       <div class="hero__transport">
         <div class="transport__meta">
           <div class="transport__art" aria-hidden="true"></div>
@@ -136,7 +131,6 @@
     <p class="hero__caption mono">Scroll to see what's under the hood ↓</p>
   </section>
 
-  <!-- ============ LOGOS / SOCIAL PROOF STRIP ============ -->
   <section class="strip">
     <p class="mono strip__label">Plays back everything you've already got</p>
     <ul class="strip__formats">
@@ -144,7 +138,6 @@
     </ul>
   </section>
 
-  <!-- ============ FEATURES ============ -->
   <section class="features" id="features">
     <div class="section-head">
       <p class="eyebrow mono">Why switch</p>
@@ -198,7 +191,6 @@
     </div>
   </section>
 
-  <!-- ============ THEATER MODE DEEP DIVE ============ -->
   <section class="theater" id="theater">
     <div class="theater__copy">
       <p class="eyebrow mono">Theater Mode</p>
@@ -212,7 +204,7 @@
         <li><strong>Binaural decoding</strong> keeps spatial mixes accurate on headphones.</li>
         <li><strong>Tap anywhere</strong> to bring transport controls back, or let them fade.</li>
       </ul>
-      <a href="#download" class="btn btn--outline">Try Theater Mode</a>
+      <a href="https://github.com/duckiest428/meshmusic/releases/latest" class="btn btn--outline">Try Theater Mode</a>
     </div>
 
     <div class="theater__visual" data-reveal>
@@ -235,7 +227,6 @@
     </div>
   </section>
 
-  <!-- ============ LIBRARY DEEP DIVE ============ -->
   <section class="library" id="library">
     <div class="library__visual" data-reveal>
       <div class="lib-window">
@@ -286,7 +277,7 @@
       </p>
       <div class="stat-row">
         <div class="stat">
-          <p class="stat__num mono">323</p>
+          <p class="stat__num mono">&infin;</p>
           <p class="stat__label">tracks scanned in one pass, instantly</p>
         </div>
         <div class="stat">
@@ -297,7 +288,6 @@
     </div>
   </section>
 
-  <!-- ============ FORMATS BAND ============ -->
   <section class="formats" id="formats">
     <p class="eyebrow mono">Under the hood</p>
     <h2 class="section-title section-title--center">Built for the files you already have.</h2>
@@ -317,23 +307,80 @@
     </div>
   </section>
 
-  <!-- ============ CTA / DOWNLOAD ============ -->
   <section class="cta" id="download">
     <div class="cta__inner">
-      <p class="eyebrow mono">Free during beta</p>
+      <p class="eyebrow mono">Free for life</p>
       <h2 class="cta__title">Bring your library back to life.</h2>
       <p class="cta__sub">macOS 13 or later. Point it at a folder and you're listening in under a minute.</p>
       <div class="hero__actions hero__actions--center">
-        <a href="#" class="btn btn--solid btn--lg" id="downloadBtn">Download for macOS</a>
-        <a href="#" class="btn btn--ghost btn--lg">View on GitHub</a>
+        <a href="https://github.com/duckiest428/meshmusic/releases/latest" class="btn btn--solid btn--lg">Download for macOS</a>
+        <a href="https://github.com/duckiest428/meshmusic" class="btn btn--ghost btn--lg">View on GitHub</a>
       </div>
       <p class="mono cta__note" id="downloadNote">Version 1.0 · Apple Silicon &amp; Intel</p>
+    </div>
+
+    <div class="slideshow-wrapper">
+      <div class="slideshow-container" id="screenshotSlideshow">
+        <div class="slide active">
+          <div class="mock-window">
+            <div class="mock-chrome"><span class="dot dot--r"></span><span class="dot dot--y"></span><span class="dot dot--g"></span><span class="mock-title mono">Mesh Player — Theater Engine View</span></div>
+            <div class="mock-body mock-body--theater">
+              <div class="hero__art accent-blur-1"></div>
+              <div class="mock-lyrics">
+                <p class="dim">Floating deep inside the spatial mix</p>
+                <p class="bright">Bit-perfect architecture tracking sound</p>
+                <p class="dim">Everything aligned perfectly right here</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="slide">
+          <div class="mock-window">
+            <div class="mock-chrome"><span class="dot dot--r"></span><span class="dot dot--y"></span><span class="dot dot--g"></span><span class="mock-title mono">Mesh Player — Local Library Storage Browser</span></div>
+            <div class="mock-body mock-body--list">
+              <div class="mock-row"><span>Motion Picture Soundtrack</span><span>Radiohead</span><span class="format-tag format-tag--mono">FLAC Lossless</span></div>
+              <div class="mock-row active-row"><span>All Neon Like</span><span>Björk</span><span class="format-tag format-tag--atmos">ATMOS MULTI</span></div>
+              <div class="mock-row"><span>Windowlicker</span><span>Aphex Twin</span><span class="format-tag format-tag--aac">ALAC 24-bit</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="slide">
+          <div class="mock-window">
+            <div class="mock-chrome"><span class="dot dot--r"></span><span class="dot dot--y"></span><span class="dot dot--g"></span><span class="mock-title mono">Mesh Player — Advanced Multi-Channel Routing Grid</span></div>
+            <div class="mock-body mock-body--engine">
+              <div class="hero__art accent-blur-2"></div>
+              <div class="engine-card">
+                <span class="mono">CORE CONFIG LINKED</span>
+                <h3>Direct Multi-Channel Output Operational</h3>
+                <p>Decoding spatial coordinate metrics to physical drivers instantly with zero conversion overhead.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="slideshow-dots" id="slideshowDots">
+        <span class="s-dot active" data-index="0"></span>
+        <span class="s-dot" data-index="1"></span>
+        <span class="s-dot" data-index="2"></span>
+      </div>
     </div>
   </section>
 
 </main>
 
 <footer class="footer">
+  <div class="vibe-disclaimer">
+    <div class="vibe-disclaimer__content">
+      <p>Mesh Player is proudly vibecoded—crafted with a mix of passion and intense AI collaboration. Even though it's vibecoded, a massive amount of personal care, strict blueprinting, and fine-tuning went into building this client from scratch.</p>
+    </div>
+    <div class="vibe-disclaimer__action">
+      <a href="https://buymeacoffee.com/petey1" target="_blank" rel="noopener noreferrer" class="btn btn--outline btn--coffee">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="margin-right:4px;"><path d="M2 21h18v-2H2v2zM20 8h-2V5h2v3zm2-5H4v13h14l4-4V3zm-4 7H6V5h12v5z"/></svg>
+        Support the Project
+      </a>
+    </div>
+  </div>
+
   <div class="footer__inner">
     <a href="#top" class="nav__brand nav__brand--footer">
       <span class="nav__mark" aria-hidden="true">
@@ -348,7 +395,7 @@
     <div class="footer__links">
       <a href="#features">Features</a>
       <a href="#theater">Theater Mode</a>
-      <a href="#download">Download</a>
+      <a href="https://github.com/duckiest428/meshmusic/releases/latest">Download</a>
     </div>
   </div>
 </footer>
@@ -356,5 +403,3 @@
 <script src="script.js"></script>
 </body>
 </html>
-
-a
