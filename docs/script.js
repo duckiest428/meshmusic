@@ -173,16 +173,47 @@
   }
 
   /* ---------------------------------------------------------
-     Download buttons — placeholder action with friendly note
-     (wire these to real release URLs when you have them)
+     Automated Screenshot Slideshow Logic
      --------------------------------------------------------- */
-  const downloadBtn = document.getElementById("downloadBtn");
-  const downloadNote = document.getElementById("downloadNote");
+  const slideshow = document.getElementById("screenshotSlideshow");
+  const dotsContainer = document.getElementById("slideshowDots");
 
-  if (downloadBtn && downloadNote) {
-    downloadBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      downloadNote.textContent = "No build linked yet — add your release URL to script.js";
+  if (slideshow && dotsContainer) {
+    const slides = slideshow.querySelectorAll(".slide");
+    const dots = dotsContainer.querySelectorAll(".s-dot");
+    let currentSlideIndex = 0;
+    let slideshowInterval = null;
+
+    const changeSlide = (nextIndex) => {
+      slides[currentSlideIndex].classList.remove("active");
+      dots[currentSlideIndex].classList.remove("active");
+
+      currentSlideIndex = nextIndex;
+
+      slides[currentSlideIndex].classList.add("active");
+      dots[currentSlideIndex].classList.add("active");
+    };
+
+    const startSlideshow = () => {
+      if (reduceMotion) return;
+      slideshowInterval = setInterval(() => {
+        const nextIndex = (currentSlideIndex + 1) % slides.length;
+        changeSlide(nextIndex);
+      }, 4500); // Transitions automatically every 4.5 seconds
+    };
+
+    // Manual navigation control via indicators
+    dots.forEach((dot) => {
+      dot.addEventListener("click", () => {
+        clearInterval(slideshowInterval);
+        const targetIndex = parseInt(dot.getAttribute("data-index"), 10);
+        if (targetIndex !== currentSlideIndex) {
+          changeSlide(targetIndex);
+        }
+        startSlideshow();
+      });
     });
+
+    startSlideshow();
   }
 })();
