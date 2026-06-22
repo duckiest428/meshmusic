@@ -16,7 +16,9 @@
   const mobileMenu = document.getElementById("navMobile");
 
   const onScroll = () => {
-    nav.classList.toggle("is-scrolled", window.scrollY > 12);
+    if (nav) {
+      nav.classList.toggle("is-scrolled", window.scrollY > 12);
+    }
   };
   onScroll();
   window.addEventListener("scroll", onScroll, { passive: true });
@@ -41,7 +43,7 @@
      Scroll reveal for feature cards / deep-dive visuals
      --------------------------------------------------------- */
   const revealTargets = document.querySelectorAll(
-    "[data-reveal], .theater__visual, .library__visual"
+    "[data-reveal], .slideshow-wrapper"
   );
 
   if (reduceMotion) {
@@ -57,7 +59,7 @@
           }
         });
       },
-      { threshold: 0.15, rootMargin: "0px 0px -40px 0px" }
+      { threshold: 0.12, rootMargin: "0px 0px -20px 0px" }
     );
     revealTargets.forEach((el) => io.observe(el));
   } else {
@@ -103,7 +105,7 @@
   }
 
   /* ---------------------------------------------------------
-     Hero lyric cycler
+     Hero lyric cycler — simple ring buffer, mimics synced lyrics
      --------------------------------------------------------- */
   const lyricSets = [
     [
@@ -168,79 +170,50 @@
   if (!reduceMotion) {
     setInterval(advanceLyrics, 3600);
   }
-/* =========================================================
-   Mesh Player — Slideshow Logic Setup
-   ========================================================= */
-let slideIndex = 0;
-const slides = document.querySelectorAll(".slideshow-container .slide");
-const dots = document.querySelectorAll(".slideshow-dots .s-dot");
 
-function showSlide(index) {
-  if (slides.length === 0) return;
-  
-  // Reset all objects
-  slides.forEach(slide => slide.classList.remove("active"));
-  dots.forEach(dot => dot.classList.remove("active"));
-  
-  // Boundary constraints
-  if (index >= slides.length) slideIndex = 0;
-  if (index < 0) slideIndex = slides.length - 1;
-  
-  slides[slideIndex].classList.add("active");
-  if (dots[slideIndex]) dots[slideIndex].classList.add("active");
-}
-
-function currentSlide(index) {
-  slideIndex = index;
-  showSlide(slideIndex);
-}
-
-// Optional: Automatic rotation cycle every 7 seconds
-setInterval(() => {
-  slideIndex++;
-  showSlide(slideIndex);
-}, 7000);
   /* ---------------------------------------------------------
-     Automated Integrated Assets Slideshow (4 Items)
+     Interface Tour Showcase Slideshow Engine
      --------------------------------------------------------- */
-  const slideshow = document.getElementById("screenshotSlideshow");
-  const dotsContainer = document.getElementById("slideshowDots");
+  let slideIndex = 0;
+  const slides = document.querySelectorAll(".slideshow-container .slide");
+  const dots = document.querySelectorAll(".slideshow-dots .s-dot");
 
-  if (slideshow && dotsContainer) {
-    const slides = slideshow.querySelectorAll(".slide");
-    const dots = dotsContainer.querySelectorAll(".s-dot");
-    let currentSlideIndex = 0;
-    let slideshowInterval = null;
+  function showSlide(index) {
+    if (slides.length === 0) return;
+    
+    slides.forEach(slide => slide.classList.remove("active"));
+    dots.forEach(dot => dot.classList.remove("active"));
+    
+    if (index >= slides.length) slideIndex = 0;
+    if (index < 0) slideIndex = slides.length - 1;
+    
+    slides[slideIndex].classList.add("active");
+    if (dots[slideIndex]) dots[slideIndex].classList.add("active");
+  }
 
-    const changeSlide = (nextIndex) => {
-      slides[currentSlideIndex].classList.remove("active");
-      dots[currentSlideIndex].classList.remove("active");
+  // Bound to global window context so html attributes can execute it
+  window.currentSlide = function(index) {
+    slideIndex = index;
+    showSlide(slideIndex);
+  };
 
-      currentSlideIndex = nextIndex;
+  if (slides.length > 0 && !reduceMotion) {
+    setInterval(() => {
+      slideIndex++;
+      showSlide(slideIndex);
+    }, 8000);
+  }
 
-      slides[currentSlideIndex].classList.add("active");
-      dots[currentSlideIndex].classList.add("active");
-    };
+  /* ---------------------------------------------------------
+     Download buttons mockup handler
+     --------------------------------------------------------- */
+  const downloadBtn = document.getElementById("downloadBtn");
+  const downloadNote = document.getElementById("downloadNote");
 
-    const startSlideshow = () => {
-      if (reduceMotion) return;
-      slideshowInterval = setInterval(() => {
-        const nextIndex = (currentSlideIndex + 1) % slides.length;
-        changeSlide(nextIndex);
-      }, 4500);
-    };
-
-    dots.forEach((dot) => {
-      dot.addEventListener("click", () => {
-        clearInterval(slideshowInterval);
-        const targetIndex = parseInt(dot.getAttribute("data-index"), 10);
-        if (targetIndex !== currentSlideIndex) {
-          changeSlide(targetIndex);
-        }
-        startSlideshow();
-      });
+  if (downloadBtn && downloadNote) {
+    downloadBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      downloadNote.textContent = "No build linked yet — add your release URL to script.js";
     });
-
-    startSlideshow();
   }
 })();
