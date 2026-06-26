@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import Combine
 
 struct SongTableView: View {
     @ObservedObject var state: AppStateManager
@@ -210,9 +211,7 @@ struct SongTableView: View {
                         // Title block with alignment play spacer (artwork completely removed as requested)
                         HStack(spacing: 8) {
                             if isPlayingThis {
-                                Image(systemName: "speaker.wave.3.fill")
-                                    .foregroundColor(state.theme.accent)
-                                    .font(.system(size: 10))
+                                AnimatedEQView(color: state.theme.accent, isPlaying: engine.isPlaying)
                                     .frame(width: 14)
                             } else {
                                 Spacer()
@@ -226,10 +225,11 @@ struct SongTableView: View {
                                     .lineLimit(1)
                                 
                                 if !state.showArtistColumn {
-                                    Text(track.artist)
-                                        .font(.caption)
-                                        .foregroundColor(state.theme.textSecondary)
-                                        .lineLimit(1)
+                                    InteractiveText(text: track.artist, color: state.theme.textSecondary, isCaption: true) {
+                                        state.selectedTab = "artists"
+                                        state.activeFilterType = "artist"
+                                        state.activeFilterValue = track.artist
+                                    }
                                 }
                             }
                         }
@@ -237,17 +237,21 @@ struct SongTableView: View {
                         
                         // Dynamic rendering of configured columns
                         if state.showArtistColumn {
-                            Text(track.artist)
-                                .foregroundColor(state.theme.textSecondary)
-                                .lineLimit(1)
-                                .frame(width: 120, alignment: .leading)
+                            InteractiveText(text: track.artist, color: state.theme.textSecondary) {
+                                state.selectedTab = "artists"
+                                state.activeFilterType = "artist"
+                                state.activeFilterValue = track.artist
+                            }
+                            .frame(width: 120, alignment: .leading)
                         }
                         
                         if state.showAlbumColumn {
-                            Text(track.album)
-                                .foregroundColor(state.theme.textSecondary)
-                                .lineLimit(1)
-                                .frame(width: 140, alignment: .leading)
+                            InteractiveText(text: track.album, color: state.theme.textSecondary) {
+                                state.selectedTab = "albums"
+                                state.activeFilterType = "album"
+                                state.activeFilterValue = track.album
+                            }
+                            .frame(width: 140, alignment: .leading)
                         }
                         
                         if state.showGenreColumn {
@@ -282,13 +286,7 @@ struct SongTableView: View {
                         
                         if state.showFormatColumn {
                             if track.isAtmos {
-                                Text("ATMOS")
-                                    .font(.system(size: 8, weight: .black))
-                                    .foregroundColor(.white)
-                                    .padding(.horizontal, 5)
-                                    .padding(.vertical, 2)
-                                    .background(LinearGradient(colors: [.blue, .indigo], startPoint: .leading, endPoint: .trailing))
-                                    .cornerRadius(4)
+                                DolbyAtmosBadge(color: .blue, scale: 0.6, showText: true)
                                     .frame(width: 60, alignment: .center)
                             } else {
                                 Text(track.format)
@@ -369,5 +367,64 @@ struct SongTableView: View {
         let m = Int(sec) / 60
         let s = Int(sec) % 60
         return String(format: "%d:%02d", m, s)
+    }
+}
+
+struct AnimatedEQView: View {
+    let color: Color
+    let isPlaying: Bool
+    
+    @State private var heights: [CGFloat] = [4, 4, 4]
+    let timer = Timer.publish(every: 0.15, on: .main, in: .common).autoconnect()
+    
+    var body: some View {
+        HStack(spacing: 2) {
+            RoundedRectangle(cornerRadius: 1)
+                .fill(color)
+                .frame(width: 3, height: isPlaying ? heights[0] : 2)
+            
+            RoundedRectangle(cornerRadius: 1)
+                .fill(color)
+                .frame(width: 3, height: isPlaying ? heights[1] : 2)
+            
+            RoundedRectangle(cornerRadius: 1)
+                .fill(color)
+                .frame(width: 3, height: isPlaying ? heights[2] : 2)
+        }
+        .frame(height: 12)
+        .animation(.easeInOut(duration: 0.15), value: heights)
+        .animation(.easeInOut(duration: 0.3), value: isPlaying)
+        .onReceive(timer) { _ in
+            if isPlaying {
+                heights = [
+                    CGFloat.random(in: 3...12),
+                    CGFloat.random(in: 4...12),
+                    CGFloat.random(in: 3...12)
+                ]
+            }
+        }
+    }
+}
+
+struct InteractiveText: View {
+    let text: String
+    let color: Color
+    var isCaption: Bool = false
+    let action: () -> Void
+    
+    @State private var isHovering = false
+    
+    var body: some View {
+        Text(text)
+            .font(isCaption ? .caption : .body)
+            .foregroundColor(isHovering ? .accentColor : color)
+            .underline(isHovering)
+            .lineLimit(1)
+            .onHover { hovering in
+                isHovering = hovering
+            }
+            .onTapGesture {
+                action()
+            }
     }
 }
