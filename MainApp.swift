@@ -27,8 +27,10 @@ struct macOSMusicPlayerContentView: View {
                         VStack(spacing: 0) {
                             if state.selectedTab == "expand-library" {
                                 LibraryExpanderWebView()
-                            } else if state.selectedTab == "songs" || state.selectedTab?.hasPrefix("playlist-") == true || state.selectedTab == "recently-added" {
+                            } else if state.selectedTab == "songs" || state.selectedTab?.hasPrefix("playlist-") == true {
                                 SongTableView(state: state, engine: engine)
+                            } else if state.selectedTab == "recently-added" {
+                                AlbumGridView(state: state, isRecentlyAdded: true)
                             } else if (state.selectedTab == "albums" || state.selectedTab == "artists" || state.selectedTab == "genres") && state.activeFilterType != nil {
                                 VStack(spacing: 0) {
                                     HStack {
@@ -187,7 +189,7 @@ struct PreferencesView: View {
     @Binding var isPresented: Bool
     @State private var directPath = "~/Music/Music/Media.localized/Music"
     
-    let themes = ["Space Gray", "Midnight Indigo", "Sakura Blossom", "Sunset Glow", "Cyber Neon"]
+    let themes = ["Space Gray", "Midnight Indigo", "Sakura Blossom", "Sunset Glow", "Cyber Neon", "True Black", "Midnight Blue", "Y2K / Skeuomorphic (Frutiger Aero)", "Cyberpunk", "Vaporwave", "Warm Coffee"]
     let eqModes = ["Flat (Default Lossless)", "Bass Booster (Sub-harmonic)", "Acoustic Live Concert Hall", "Classical (Symphonic Arc)", "Vocal Booster (Custom Lyrics Focus)", "Electronic Spectrum"]
     
     var body: some View {
@@ -302,6 +304,15 @@ struct PreferencesView: View {
                         Toggle("Auto-scroll lyrics on time updates", isOn: $state.autoScrollLyrics)
                             .toggleStyle(.checkbox)
                             .foregroundColor(state.theme.textPrimary)
+                            
+                        Toggle("Show album artwork in Dock", isOn: $state.showDockArtwork)
+                            .toggleStyle(.checkbox)
+                            .foregroundColor(state.theme.textPrimary)
+                            
+                        Toggle("Remove playlist songs from library", isOn: $state.removePlaylistSongsFromLibrary)
+                            .toggleStyle(.checkbox)
+                            .foregroundColor(state.theme.textPrimary)
+                            .help("When deleting a playlist or removing a song, also delete it from the global library.")
                     }
                     
                     VStack(alignment: .leading, spacing: 8) {
@@ -339,16 +350,52 @@ struct PreferencesView: View {
 class AppDelegate: NSObject, NSApplicationDelegate {
     var statusItem: NSStatusItem?
     var engine: AudioEngineManager?
+    var state: AppStateManager?
+    var dockIdleTimer: Timer?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         updateStatusItem(for: nil)
         
         let menu = NSMenu()
-        menu.addItem(NSMenuItem(title: "Play / Pause", action: #selector(togglePlayPause), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: "Open App", action: #selector(openApp), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: "Toggle Favourite", action: #selector(toggleFavourite), keyEquivalent: ""))
+        menu.addItem(NSMenuItem.separator())
+        menu.addItem(NSMenuItem(title: "Previous", action: #selector(playPrevious), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: "Play/Pause", action: #selector(togglePlayPause), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: "Next", action: #selector(playNext), keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "Quit", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
         statusItem?.menu = menu
+    }
+    
+    @objc func openApp() {
+        NSApp.activate(ignoringOtherApps: true)
+    }
+    
+    @objc func toggleFavourite() {
+        if let currentId = engine?.currentTrack?.id, let state = state {
+            if let index = state.tracks.firstIndex(where: { $0.id == currentId }) {
+                state.tracks[index].isFavorite.toggle()
+                if let currentTrack = engine?.currentTrack {
+                    var updated = currentTrack
+                    updated.isFavorite = state.tracks[index].isFavorite
+                    engine?.currentTrack = updated
+                }
+            }
+        }
+    }
+    
+    @objc func playPrevious() {
+        if let engine = engine, let state = state {
+            state.playPrevious(engine: engine)
+        }
+    }
+    
+    @objc func playNext() {
+        if let engine = engine, let state = state {
+            state.playNext(engine: engine)
+        }
     }
     
     @objc func togglePlayPause() {
@@ -363,6 +410,35 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             } else {
                 button.title = ""
                 button.image = NSImage(systemSymbolName: "music.note", accessibilityDescription: "Mesh Player")
+            }
+        }
+    }
+    
+    func updateDockTile(for track: LocalTrack?, isPlaying: Bool) {
+        let dockTile = NSApplication.shared.dockTile
+        
+        let shouldShowArtwork = state?.showDockArtwork ?? false
+        
+        if shouldShowArtwork, let track = track, isPlaying {
+            dockIdleTimer?.invalidate()
+            dockIdleTimer = nil
+            
+            let imageView = NSImageView()
+            if let artData = track.embeddedArtData, let img = NSImage(data: artData) {
+                imageView.image = img
+            } else if let localCover = track.localCoverURL, let img = NSImage(contentsOf: localCover) {
+                imageView.image = img
+            } else {
+                imageView.image = NSImage(systemSymbolName: "music.note", accessibilityDescription: nil)
+            }
+            dockTile.contentView = imageView
+            dockTile.display()
+        } else {
+            if dockIdleTimer == nil && dockTile.contentView != nil {
+                dockIdleTimer = Timer.scheduledTimer(withTimeInterval: shouldShowArtwork ? 10.0 : 0.0, repeats: false) { _ in
+                    dockTile.contentView = nil
+                    dockTile.display()
+                }
             }
         }
     }
@@ -382,9 +458,39 @@ struct macOSMusicPlayerApp: App {
                 .environmentObject(engine)
                 .onAppear {
                     appDelegate.engine = engine
+                    appDelegate.state = state
+                    
+                    SystemMediaManager.shared.setupRemoteCommandCenter()
+                    
+                    SystemMediaManager.shared.onPlayNext = {
+                        appDelegate.playNext()
+                    }
+                    
+                    SystemMediaManager.shared.onPlayPrevious = {
+                        appDelegate.playPrevious()
+                    }
+                    
+                    SystemMediaManager.shared.onTogglePlayPause = {
+                        appDelegate.togglePlayPause()
+                    }
+                    
+                    engine.onPlayNext = {
+                        appDelegate.playNext()
+                    }
+                    
+                    engine.onPlayPrevious = {
+                        appDelegate.playPrevious()
+                    }
                 }
                 .onChange(of: engine.currentTrack) { track in
                     appDelegate.updateStatusItem(for: track)
+                    appDelegate.updateDockTile(for: track, isPlaying: engine.isPlaying)
+                }
+                .onChange(of: engine.isPlaying) { isPlaying in
+                    appDelegate.updateDockTile(for: engine.currentTrack, isPlaying: isPlaying)
+                }
+                .onChange(of: state.showDockArtwork) { _ in
+                    appDelegate.updateDockTile(for: engine.currentTrack, isPlaying: engine.isPlaying)
                 }
                 .touchBar {
                     if let track = engine.currentTrack {
@@ -482,6 +588,7 @@ struct MiniPlayerView: View {
 
 struct AlbumGridView: View {
     @ObservedObject var state: AppStateManager
+    var isRecentlyAdded: Bool = false
     
     let columns = [
         GridItem(.adaptive(minimum: 140, maximum: 180), spacing: 20)
@@ -491,10 +598,10 @@ struct AlbumGridView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 HStack {
-                    Image(systemName: "square.stack")
+                    Image(systemName: isRecentlyAdded ? "clock.arrow.circlepath" : "square.stack")
                         .font(.title3)
                         .foregroundColor(state.theme.accent)
-                    Text("Albums")
+                    Text(isRecentlyAdded ? "Recently Added" : "Albums")
                         .font(.title2)
                         .bold()
                         .foregroundColor(state.theme.textPrimary)
@@ -502,8 +609,9 @@ struct AlbumGridView: View {
                 .padding(.top)
                 
                 LazyVGrid(columns: columns, spacing: 20) {
-                    ForEach(state.albumsList) { album in
+                    ForEach(isRecentlyAdded ? state.recentlyAddedAlbumsList : state.albumsList) { album in
                         Button(action: {
+                            state.selectedTab = "albums" // To render AlbumDetailView properly
                             state.activeFilterType = "album"
                             state.activeFilterValue = album.name
                         }) {
